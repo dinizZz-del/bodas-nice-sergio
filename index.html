@@ -1220,20 +1220,27 @@
     async function handleFormSubmit(event) {
         event.preventDefault();
 
-        const submitButton = event.target.querySelector('button[type="submit"]');
+        const form = event.target;
+        const submitButton = form.querySelector('button[type="submit"]');
         const originalButtonText = submitButton.textContent;
 
-        const name = document.getElementById('name').value;
-        const presence = document.querySelector('input[name="presence"]:checked').value;
+        const name = document.getElementById('name').value.trim();
+        const presenceInput = document.querySelector('input[name="presence"]:checked');
         const companions = document.getElementById('companions-count').value || '0';
-        const observations = document.getElementById('observations').value;
+        const observations = document.getElementById('observations').value.trim();
 
+        if (!presenceInput) {
+            alert('Por favor, informe se você irá comparecer.');
+            return;
+        }
+
+        // O Apps Script lê estes valores por e.parameter
         const formData = new URLSearchParams();
-        formData.append('nome', name);
-        formData.append('presenca', presence);
-        formData.append('acompanhantes', companions);
-        formData.append('observacoes', observations);
-        formData.append('data', new Date().toLocaleString('pt-BR'));
+        formData.set('nome', name);
+        formData.set('presenca', presenceInput.value);
+        formData.set('acompanhantes', presenceInput.value === 'sim' ? companions : '0');
+        formData.set('observacoes', observations);
+        formData.set('data', new Date().toLocaleString('pt-BR'));
 
         try {
             submitButton.disabled = true;
@@ -1242,15 +1249,15 @@
             await fetch(APPS_SCRIPT_URL, {
                 method: 'POST',
                 mode: 'no-cors',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-                },
-                body: formData.toString()
+                body: formData
             });
 
-            // Mantém o comportamento original após o envio
             document.getElementById('form-page').classList.remove('active');
             document.getElementById('success-page').classList.add('active');
+
+            form.reset();
+            companionsGroup.style.display = 'none';
+
         } catch (error) {
             console.error('Erro ao enviar confirmação:', error);
             alert('Não foi possível enviar sua confirmação agora. Por favor, tente novamente.');

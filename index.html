@@ -725,31 +725,53 @@
         });
     });
 
-    // Submeter formulário
-    function handleFormSubmit(event) {
+    // URL do Google Apps Script
+    const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbwYtWOY7NIQqT0tmPWFDLSfpx5yXASTigYNEb8FKCP-k_LRpZj2Kb4ydzhqqTSf6BtM/exec';
+
+    // Submeter formulário e salvar no Google Sheets
+    async function handleFormSubmit(event) {
         event.preventDefault();
 
-        const name = document.getElementById('name').value;
+        const botaoEnviar = event.target.querySelector('button[type="submit"]');
+        const name = document.getElementById('name').value.trim();
         const presence = document.querySelector('input[name="presence"]:checked').value;
-        const companions = document.getElementById('companions-count').value || '0';
-        const observations = document.getElementById('observations').value;
+        const companions = presence === 'sim'
+            ? (document.getElementById('companions-count').value || '0')
+            : '0';
+        const observations = document.getElementById('observations').value.trim();
 
-        console.log({
+        const dados = {
             nome: name,
             presenca: presence,
             acompanhantes: companions,
-            observacoes: observations,
-            data: new Date().toLocaleString('pt-BR')
-        });
+            observacoes: observations
+        };
 
-        // Mostrar mensagem de sucesso
-        document.getElementById('form-section').classList.remove('active');
-        document.getElementById('success-message').classList.add('active');
-        document.getElementById('success-message').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        try {
+            botaoEnviar.disabled = true;
+            botaoEnviar.textContent = 'Enviando...';
 
-        // Limpar formulário
-        document.getElementById('confirmation-form').reset();
-        companionsGroup.style.display = 'none';
+            await fetch(URL_SCRIPT, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'text/plain;charset=utf-8'
+                },
+                body: JSON.stringify(dados)
+            });
+
+            document.getElementById('form-section').classList.remove('active');
+            document.getElementById('success-message').classList.add('active');
+            document.getElementById('success-message').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            document.getElementById('confirmation-form').reset();
+            companionsGroup.style.display = 'none';
+        } catch (erro) {
+            console.error('Erro ao enviar confirmação:', erro);
+            alert('Não foi possível enviar sua confirmação. Por favor, tente novamente.');
+        } finally {
+            botaoEnviar.disabled = false;
+            botaoEnviar.textContent = 'Enviar Confirmação';
+        }
     }
 </script>
 

@@ -270,83 +270,37 @@
             margin-bottom: 10px;
         }
 
-        .dress-code-intro {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 17px;
-            line-height: 1.55;
-            color: #6f6254;
-            margin: 2px auto 18px;
-            max-width: 430px;
-        }
-
-        .dress-code-intro strong {
-            color: #6f553e;
-            font-weight: 600;
-        }
-
         .dress-code-colors {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 10px;
-            margin: 18px 0 14px;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin: 15px 0;
         }
 
-        .palette-item {
-            background: rgba(255,255,255,.58);
-            border: 1px solid rgba(178,143,95,.28);
-            border-radius: 14px;
-            padding: 10px 8px 11px;
-            box-shadow: 0 6px 18px rgba(120,101,82,.08);
-        }
-
-        .color-swatch {
-            width: 100%;
-            height: 54px;
-            border-radius: 10px;
-            border: 1px solid rgba(0,0,0,.08);
-            margin-bottom: 8px;
-        }
-
-        .palette-name {
-            display: block;
-            font-size: 10px;
-            line-height: 1.2;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #6f6254;
-            font-weight: 600;
+        .color-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 1px solid rgba(0, 0, 0, 0.1);
         }
 
         .color-marrom {
-            background-color: #786552;
+            background-color: #8b7355;
         }
 
         .color-marrom-light {
-            background-color: #ae9b87;
+            background-color: #b8a892;
         }
 
         .color-bege {
-            background-color: #d9d0c2;
+            background-color: #d4cdc0;
         }
 
         .dress-code-text {
-            font-size: 11px;
-            color: #796b5d;
-            line-height: 1.65;
+            font-size: 12px;
+            color: var(--text-dark);
+            line-height: 1.6;
             margin-top: 12px;
-        }
-
-        .dress-code-highlight {
-            display: inline-block;
-            margin-top: 8px;
-            padding: 7px 12px;
-            border-radius: 999px;
-            background: rgba(120,101,82,.08);
-            color: #6f553e;
-            font-size: 10px;
-            font-weight: 600;
-            letter-spacing: 1.1px;
-            text-transform: uppercase;
         }
 
         /* RSVP */
@@ -890,13 +844,9 @@
                 gap: 10px;
             }
 
-            .color-swatch {
-                height: 46px;
-            }
-
-            .palette-name {
-                font-size: 9px;
-                letter-spacing: .7px;
+            .color-dot {
+                width: 18px;
+                height: 18px;
             }
         }
     </style>
@@ -992,29 +942,14 @@
             </div>
 
             <div class="dress-code-card">
-                <div class="dress-code-label">Dress Code · Paleta das Vestimentas</div>
-                <div class="dress-code-intro">
-                    Para manter a harmonia visual da celebração, pedimos com carinho que sua vestimenta siga <strong>uma destas tonalidades:</strong>
+                <div class="dress-code-label">Dress Code</div>
+                <div class="dress-code-colors">
+                    <div class="color-dot color-marrom" title="Marrom"></div>
+                    <div class="color-dot color-marrom-light" title="Marrom-Claro"></div>
+                    <div class="color-dot color-bege" title="Bege"></div>
                 </div>
-
-                <div class="dress-code-colors" aria-label="Paleta de vestimentas: marrom, marrom-claro e bege">
-                    <div class="palette-item">
-                        <div class="color-swatch color-marrom" title="Marrom"></div>
-                        <span class="palette-name">Marrom</span>
-                    </div>
-                    <div class="palette-item">
-                        <div class="color-swatch color-marrom-light" title="Marrom-Claro"></div>
-                        <span class="palette-name">Marrom-Claro</span>
-                    </div>
-                    <div class="palette-item">
-                        <div class="color-swatch color-bege" title="Bege"></div>
-                        <span class="palette-name">Bege</span>
-                    </div>
-                </div>
-
-                <div class="dress-code-highlight">Marrom · Marrom-Claro · Bege</div>
                 <div class="dress-code-text">
-                    Escolha livremente entre essas tonalidades e suas variações próximas para compor o seu look.
+                    Marrom • Marrom-Claro • Bege
                 </div>
             </div>
 
@@ -1223,17 +1158,19 @@
         const submitButton = event.target.querySelector('button[type="submit"]');
         const originalButtonText = submitButton.textContent;
 
-        const name = document.getElementById('name').value;
-        const presence = document.querySelector('input[name="presence"]:checked').value;
-        const companions = document.getElementById('companions-count').value || '0';
-        const observations = document.getElementById('observations').value;
+        const name = document.getElementById('name').value.trim();
+        const selectedPresence = document.querySelector('input[name="presence"]:checked');
+        const presence = selectedPresence ? selectedPresence.value : '';
+        const companions = presence === 'sim' ? (document.getElementById('companions-count').value || '0') : '0';
+        const observations = document.getElementById('observations').value.trim();
 
-        const formData = new URLSearchParams();
-        formData.append('nome', name);
-        formData.append('presenca', presence);
-        formData.append('acompanhantes', companions);
-        formData.append('observacoes', observations);
-        formData.append('data', new Date().toLocaleString('pt-BR'));
+        const payload = {
+            nome: name,
+            presenca: presence,
+            acompanhantes: companions,
+            observacoes: observations,
+            data: new Date().toLocaleString('pt-BR')
+        };
 
         try {
             submitButton.disabled = true;
@@ -1243,14 +1180,15 @@
                 method: 'POST',
                 mode: 'no-cors',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                    'Content-Type': 'text/plain;charset=utf-8'
                 },
-                body: formData.toString()
+                body: JSON.stringify(payload)
             });
 
-            // Mantém o comportamento original após o envio
             document.getElementById('form-page').classList.remove('active');
             document.getElementById('success-page').classList.add('active');
+            document.getElementById('confirmation-form').reset();
+            companionsGroup.style.display = 'none';
         } catch (error) {
             console.error('Erro ao enviar confirmação:', error);
             alert('Não foi possível enviar sua confirmação agora. Por favor, tente novamente.');
